@@ -1,42 +1,56 @@
 import { db } from "../firebase-config";
-import { doc, getDoc, collection } from "firebase/firestore/lite";
-import { useEffect, useState } from "react";
+import { doc, getDoc } from "firebase/firestore/lite";
+import { useEffect, useMemo, useState } from "react";
 import Match from "./Match";
+import Header from "./Header";
+
+const slugify = s =>
+  (s ?? "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-");
 
 const MatchList = ({ event }) => {
-    const [matches, setMatches] = useState([]);
+  const [matches, setMatches] = useState([]);
 
-    useEffect(() => {
-        const getMatches = async () => {
-            try {
-                const docRef = doc(db, "eventswwe", event); 
-                const docSnap = await getDoc(docRef);
+  const eventId = useMemo(() => slugify(event), [event]);
 
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    const matchList = data.Matches || [];
-                    setMatches(matchList);
-                    console.log("Matches:", matchList);
-                } else {
-                    console.warn("No such document:", event);
-                    setMatches([]);
-                }
-            } catch (err) {
-                console.error("Error fetching matches:", err);
-            }
-        };
+  useEffect(() => {
+    const getMatches = async () => {
+      try {
+        const docRef = doc(db, "eventswwe", event);
+        const docSnap = await getDoc(docRef);
 
-        if (event) getMatches();
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setMatches(data.Matches || []);
+        } else {
+          console.warn("No such document:", event);
+          setMatches([]);
+        }
+      } catch (err) {
+        console.error("Error fetching matches:", err);
+      }
+    };
 
-    }, [event]);
+    if (event) getMatches();
+  }, [event]);
 
-    return (
-        <div>
-            {matches.length > 0 && matches.map((elem) => {
-                return <Match match={elem} />
-            })}
-        </div>
-    );
+  return (
+    <>
+      <Header event={event} />
+      <div>
+        {matches.length > 0 &&
+          matches.map((elem, idx) => (
+            <Match
+              key={`${eventId}-${idx}`}
+              match={elem}
+              eventId={eventId}
+            />
+          ))}
+      </div>
+    </>
+  );
 };
 
-export default MatchList
+export default MatchList;

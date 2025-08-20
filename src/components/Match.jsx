@@ -1,6 +1,6 @@
 import { useRef, useState } from "react"
 
-const Match = ({ match }) => {
+const Match = ({ match, eventId }) => {
 
     const [rating, setRating] = useState(0)
 
@@ -20,6 +20,8 @@ const Match = ({ match }) => {
         for (let i = 0; i < clickedRating; i++) {
             if (refs.current[i]) refs.current[i].classList.add('active');
         }
+
+        console.log(eventId)
     };
 
     return (
@@ -28,11 +30,12 @@ const Match = ({ match }) => {
             <div className="match-rating">
                 {ratingScale.map((elem, index) => {
                     return <button
-                        key={elem}
+                        key={eventId + elem}
                         onClick={() => handleClick(elem)}
                         className={elem}
                         ref={(el) => (refs.current[index] = el)}
-                    >★</button>
+                    >★
+                    </button>
                 })}
             </div>
         </div>
